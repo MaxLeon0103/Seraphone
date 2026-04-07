@@ -4,12 +4,12 @@ QScrollArea {
 }
 
 QLabel#label1 {
-    font: bold 33px 'Microsoft YaHei', 'Segoe UI', ;
+    font: 700 34px 'Segoe UI', 'PingFang SC', 'Microsoft YaHei';
     color: black;
 }
 
 QLabel#label2,
 QLabel#label3 {
-    font: 14px 'Segoe UI', 'Microsoft YaHei';
-    color: rgb(131, 131, 131)
+    font: 14px 'Segoe UI', 'PingFang SC', 'Microsoft YaHei';
+    color: rgb(120, 120, 125)
 }

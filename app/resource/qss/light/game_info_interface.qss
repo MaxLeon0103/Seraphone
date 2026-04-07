@@ -4,32 +4,24 @@ GameInfoInterface {
 }
 
 SummonersView {
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.095);
-    background-color: rgba(255, 255, 255, 0.667);
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.72);
 }
 
 #summonersGamesView {
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.095);
-    background-color: rgba(255, 255, 255, 0.667);
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: rgba(255, 255, 255, 0.72);
 }
 
 SummonerInfoView {
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.095);
-    /* background-color: rgba(245, 245, 245, 0.667); */
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
-
-/* SummonerInfoView:hover {
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.095);
-    background-color: rgba(233, 233, 233, 0.5);
-} */
 
 SummonerName {
     font: bold 13px 'Microsoft YaHei', 'Segoe UI';
-    /* text-align: left; */
     padding: 4px 6px 4px 6px;
     color: black;
     border: none;
@@ -50,12 +42,10 @@ SummonerName:disabled {
 
 SummonerInfoView>QLabel {
     font: 12px 'Segoe UI', 'Microsoft YaHei';
-    /* border: 1px solid black; */
 }
 
 SummonerInfoView>SummonerName {
     font: bold 13px 'Microsoft YaHei', 'Segoe UI';
-    /* text-align: left; */
     padding: 4px 6px 4px 6px;
     color: black;
     border: none;
@@ -65,7 +55,6 @@ SummonerInfoView>SummonerName {
 SummonerInfoView>#kdaLabel,
 SummonerInfoView>#kdaValLabel {
     font: 11px 'Segoe UI', 'Microsoft YaHei';
-    /* border: 1px solid black; */
 }
 
 SummonerInfoView>#kdaValLabel {
@@ -73,7 +62,7 @@ SummonerInfoView>#kdaValLabel {
 }
 
 GameTab {
-    border-radius: 6px;
+    border-radius: 12px;
     border: 1px solid;
 }
 
@@ -85,35 +74,17 @@ GameTab>#time {
     font: 11px;
 }
 
-GameTab>#kills {
-    font: bold 11px;
-}
-
-GameTab>#slash1 {
-    font: bold 11px;
-}
-
-GameTab>#deaths {
-    font: bold 11px;
-}
-
-GameTab>#slash2 {
-    font: bold 11px;
-}
-
+GameTab>#kills,
+GameTab>#slash1,
+GameTab>#deaths,
+GameTab>#slash2,
 GameTab>#assists {
     font: bold 11px;
 }
 
-/* Games {
-    border-radius: 6px;
-    border: 1px solid rgba(0, 0, 0, 0.095);
-    background-color: rgba(245, 245, 245, 0.667);
-} */
-
 Games {
     border: none;
-    border-right: 1px solid rgba(0, 0, 0, 0.095);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
     background-color: transparent;
 }
 
@@ -126,17 +97,17 @@ Games>#summonerName {
 }
 
 Games:hover {
-    background-color: rgba(233, 233, 233, 0.5);
+    background-color: rgba(233, 233, 233, 0.42);
 }
 
 Games[isFirst=true]:hover {
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    background-color: rgba(233, 233, 233, 0.5);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    background-color: rgba(233, 233, 233, 0.42);
 }
 
 Games[isLast=true]:hover {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-    background-color: rgba(233, 233, 233, 0.5);
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
+    background-color: rgba(233, 233, 233, 0.42);
 }

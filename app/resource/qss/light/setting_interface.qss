@@ -8,32 +8,17 @@ QScrollArea {
     border: none;
 }
 
-
 QLabel#settingLabel {
-    font: 33px 'Microsoft YaHei';
+    font: 700 34px 'Segoe UI', 'PingFang SC', 'Microsoft YaHei';
+    letter-spacing: 0.5px;
     background-color: transparent;
 }
-
-/* SettingInterface,
-#scrollWidget {
-    background-color: rgb(249, 249, 249);
-}
-
-QScrollArea {
-    background-color: rgb(249, 249, 249);
-    border: none;
-}
-
-QLabel#settingLabel {
-    font: 33px 'Microsoft YaHei Light';
-    background-color: transparent;
-} */
 
 ColorAnimationFrame {
-    border: 1px solid;
-    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
 }
 
 ModeCheckButtonsGroup>#separator {
-    color: rgba(0, 0, 0, 0.095);
+    color: rgba(0, 0, 0, 0.08);
 }
