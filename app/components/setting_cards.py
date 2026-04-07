@@ -431,6 +431,71 @@ class ThemeColorSettingCard(ExpandGroupSettingCard):
         setThemeColor(color)
 
 
+class TextInputSettingCard(ExpandGroupSettingCard):
+    def __init__(self, configItem, title, hintContent,
+                 icon: Union[str, QIcon, FluentIconBase],
+                 content=None, parent=None, password=False):
+        super().__init__(icon, title, content, parent)
+        self.configItem = configItem
+
+        self.statusLabel = QLabel(self)
+        self.inputWidget = QWidget(self.view)
+        self.inputLayout = QHBoxLayout(self.inputWidget)
+
+        self.hintLabel = QLabel(hintContent)
+        self.lineEdit = LineEdit(self)
+
+        self.buttonWidget = QWidget(self.view)
+        self.buttonLayout = QHBoxLayout(self.buttonWidget)
+        self.pushButton = PushButton(self.tr("Apply"))
+
+        self.password = password
+
+        self.__initLayout()
+        self.__initWidget()
+
+    def __initLayout(self):
+        self.addWidget(self.statusLabel)
+
+        self.inputLayout.setSpacing(19)
+        self.inputLayout.setAlignment(Qt.AlignTop)
+        self.inputLayout.setContentsMargins(48, 18, 44, 18)
+        self.inputLayout.addWidget(self.hintLabel, alignment=Qt.AlignLeft)
+        self.inputLayout.addWidget(self.lineEdit, alignment=Qt.AlignRight)
+        self.inputLayout.setSizeConstraint(QHBoxLayout.SetMinimumSize)
+
+        self.buttonLayout.setContentsMargins(48, 18, 44, 18)
+        self.buttonLayout.addWidget(self.pushButton, 0, Qt.AlignRight)
+        self.buttonLayout.setSizeConstraint(QHBoxLayout.SetMinimumSize)
+
+        self.viewLayout.setSpacing(0)
+        self.viewLayout.setContentsMargins(0, 0, 0, 0)
+        self.addGroupWidget(self.inputWidget)
+        self.addGroupWidget(self.buttonWidget)
+
+    def __initWidget(self):
+        value = str(cfg.get(self.configItem) or "")
+        self.lineEdit.setText(value)
+        self.lineEdit.setMinimumWidth(360)
+        if self.password:
+            self.lineEdit.setEchoMode(LineEdit.Password)
+
+        self.pushButton.setMinimumWidth(100)
+        self.pushButton.clicked.connect(self.__onApply)
+        self.__setStatusLabelText(value)
+
+    def __onApply(self):
+        value = self.lineEdit.text().strip()
+        cfg.set(self.configItem, value)
+        self.__setStatusLabelText(value)
+
+    def __setStatusLabelText(self, value: str):
+        if self.password and value:
+            self.statusLabel.setText(self.tr("Now: ") + "******")
+        else:
+            self.statusLabel.setText(self.tr("Now: ") + value)
+
+
 class ProxySettingCard(ExpandGroupSettingCard):
     def __init__(self, title, content, enableConfigItem: ConfigItem = None,
                  addrConfigItem: ConfigItem = None, parent=None):

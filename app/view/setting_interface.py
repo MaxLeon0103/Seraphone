@@ -17,7 +17,7 @@ from app.components.seraphine_interface import SeraphineInterface
 from app.components.setting_cards import (LineEditSettingCard, GameTabColorSettingCard,
                                           LooseSwitchSettingCard, ProxySettingCard,
                                           DeathsNumberColorSettingCard, ThemeColorSettingCard,
-                                          QueueFilterCard)
+                                          QueueFilterCard, TextInputSettingCard)
 from app.components.message_box import MultiPathSettingMsgBox
 
 
@@ -76,6 +76,65 @@ class SettingInterface(SeraphineInterface):
 
         self.opggGroup = SettingCardGroup(self.tr("OP.GG"),
                                           self.scrollWidget)
+
+        self.aiGroup = SettingCardGroup(self.tr("AI Assistant"),
+                                        self.scrollWidget)
+
+        self.enableAiAnalysisCard = SwitchSettingCard(
+            Icon.BRAIN if hasattr(Icon, 'BRAIN') else Icon.INFO,
+            self.tr("Enable AI analysis"),
+            self.tr("Analyze draft/lineup and generate actionable advice"),
+            cfg.enableAiAnalysis,
+            self.aiGroup)
+
+        self.aiBaseUrlCard = TextInputSettingCard(
+            cfg.aiBaseUrl,
+            self.tr("AI Base URL"),
+            self.tr("OpenAI-compatible endpoint:"),
+            Icon.LINK if hasattr(Icon, 'LINK') else Icon.GITHUB,
+            self.tr("Supports OpenAI-compatible APIs"),
+            self.aiGroup)
+
+        self.aiModelCard = TextInputSettingCard(
+            cfg.aiModel,
+            self.tr("AI Model"),
+            self.tr("Model name:"),
+            Icon.ROBOT if hasattr(Icon, 'ROBOT') else Icon.INFO,
+            self.tr("Example: gpt-4o-mini / qwen-max / deepseek-chat"),
+            self.aiGroup)
+
+        self.aiApiKeyCard = TextInputSettingCard(
+            cfg.aiApiKey,
+            self.tr("AI API Key"),
+            self.tr("API key:"),
+            Icon.CERTIFICATE,
+            self.tr("Stored locally in config"),
+            self.aiGroup,
+            password=True)
+
+        self.enableAiTelegramPushCard = SwitchSettingCard(
+            Icon.TELEGRAM if hasattr(Icon, 'TELEGRAM') else Icon.PLANE,
+            self.tr("Push in-game analysis to Telegram"),
+            self.tr("After enemy data is available, push one analysis per match"),
+            cfg.enableAiTelegramPush,
+            self.aiGroup)
+
+        self.aiTelegramBotTokenCard = TextInputSettingCard(
+            cfg.aiTelegramBotToken,
+            self.tr("Telegram Bot Token"),
+            self.tr("Bot token:"),
+            Icon.LOCK,
+            self.tr("Used for sendMessage"),
+            self.aiGroup,
+            password=True)
+
+        self.aiTelegramChatIdCard = TextInputSettingCard(
+            cfg.aiTelegramChatId,
+            self.tr("Telegram Chat ID"),
+            self.tr("Chat ID:"),
+            Icon.PERSON_BOARD,
+            self.tr("Example: 1053306439"),
+            self.aiGroup)
 
         self.autoShowOpggCard = SwitchSettingCard(
             Icon.WINDOW, self.tr("Show OP.GG window automatically"),
@@ -282,6 +341,14 @@ class SettingInterface(SeraphineInterface):
         self.opggGroup.addSettingCard(self.opggOnTopCard)
         self.opggGroup.addSettingCard(self.opggProxyCard)
 
+        self.aiGroup.addSettingCard(self.enableAiAnalysisCard)
+        self.aiGroup.addSettingCard(self.aiBaseUrlCard)
+        self.aiGroup.addSettingCard(self.aiModelCard)
+        self.aiGroup.addSettingCard(self.aiApiKeyCard)
+        self.aiGroup.addSettingCard(self.enableAiTelegramPushCard)
+        self.aiGroup.addSettingCard(self.aiTelegramBotTokenCard)
+        self.aiGroup.addSettingCard(self.aiTelegramChatIdCard)
+
         self.generalGroup.addSettingCard(self.lolFolderCard)
         self.generalGroup.addSettingCard(self.enableStartLolWithApp)
         self.generalGroup.addSettingCard(self.deleteResourceCard)
@@ -311,6 +378,7 @@ class SettingInterface(SeraphineInterface):
         self.expandLayout.setContentsMargins(36, 0, 36, 0)
         self.expandLayout.addWidget(self.functionGroup)
         self.expandLayout.addWidget(self.opggGroup)
+        self.expandLayout.addWidget(self.aiGroup)
         self.expandLayout.addWidget(self.generalGroup)
         self.expandLayout.addWidget(self.logGroup)
         self.expandLayout.addWidget(self.personalizationGroup)
