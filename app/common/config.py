@@ -207,6 +207,28 @@ class Config(QConfig):
     enableSilent = ConfigItem(
         "General", "EnableSilent", False, BoolValidator())
 
+    # AI analysis
+    enableAiAnalysis = ConfigItem(
+        "Functions", "EnableAiAnalysis", True, BoolValidator())
+    aiProvider = ConfigItem(
+        "Functions", "AiProvider", "openai")
+    aiBaseUrl = ConfigItem(
+        "Functions", "AiBaseUrl", "https://api.openai.com/v1")
+    aiApiKey = ConfigItem(
+        "Functions", "AiApiKey", "")
+    aiModel = ConfigItem(
+        "Functions", "AiModel", "gpt-4o-mini")
+    aiTimeoutSeconds = RangeConfigItem(
+        "Functions", "AiTimeoutSeconds", 3, RangeValidator(1, 15))
+
+    # Telegram push for in-game analysis
+    enableAiTelegramPush = ConfigItem(
+        "Functions", "EnableAiTelegramPush", False, BoolValidator())
+    aiTelegramBotToken = ConfigItem(
+        "Functions", "AiTelegramBotToken", "")
+    aiTelegramChatId = ConfigItem(
+        "Functions", "AiTelegramChatId", "")
+
     windowSize = ConfigItem("Personalization", "WindowSize", QSize(
         1134, 826), None, QSizeSerializer())
 

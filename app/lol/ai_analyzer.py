@@ -3,6 +3,8 @@ import json
 import requests
 from typing import Dict, List, Any
 
+from app.common.config import cfg
+
 
 class AIDraftAnalyzer:
     """Lightweight draft analyzer.
@@ -13,10 +15,7 @@ class AIDraftAnalyzer:
     """
 
     def __init__(self):
-        self.api_key = os.getenv("SERAPHINE_AI_API_KEY", "")
-        self.base_url = os.getenv("SERAPHINE_AI_BASE_URL", "https://api.openai.com/v1")
-        self.model = os.getenv("SERAPHINE_AI_MODEL", "gpt-4o-mini")
-        self.timeout = float(os.getenv("SERAPHINE_AI_TIMEOUT", "2.2"))
+        self.timeout = 2.2
 
     def _safe_winrate(self, games: List[Dict[str, Any]]) -> float:
         if not games:
@@ -96,12 +95,17 @@ class AIDraftAnalyzer:
         return result
 
     def _ai_rewrite(self, result: Dict[str, Any]) -> str:
-        if not self.api_key:
+        api_key = cfg.get(cfg.aiApiKey) or os.getenv("SERAPHINE_AI_API_KEY", "")
+        if not api_key:
             return ""
+
+        base_url = cfg.get(cfg.aiBaseUrl) or os.getenv("SERAPHINE_AI_BASE_URL", "https://api.openai.com/v1")
+        model = cfg.get(cfg.aiModel) or os.getenv("SERAPHINE_AI_MODEL", "gpt-4o-mini")
+        timeout = float(cfg.get(cfg.aiTimeoutSeconds) or os.getenv("SERAPHINE_AI_TIMEOUT", "2.2"))
 
         try:
             payload = {
-                "model": self.model,
+                "model": model,
                 "messages": [
                     {"role": "system", "content": "你是LOL BP分析助手。输出必须短、可执行、禁止空话。"},
                     {"role": "user", "content": "将以下JSON改写成3行中文策略建议：" + json.dumps(result, ensure_ascii=False)},
@@ -109,10 +113,10 @@ class AIDraftAnalyzer:
                 "temperature": 0.2,
             }
             r = requests.post(
-                f"{self.base_url.rstrip('/')}/chat/completions",
-                headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                f"{base_url.rstrip('/')}/chat/completions",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
                 json=payload,
-                timeout=self.timeout,
+                timeout=timeout,
             )
             if r.status_code != 200:
                 return ""
@@ -120,6 +124,40 @@ class AIDraftAnalyzer:
             return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
         except Exception:
             return ""
+
+    def push_to_telegram(self, title: str, analysis: Dict[str, Any], match_key: str = "") -> bool:
+        if not cfg.get(cfg.enableAiTelegramPush):
+            return False
+        token = cfg.get(cfg.aiTelegramBotToken)
+        chat_id = cfg.get(cfg.aiTelegramChatId)
+        if not token or not chat_id:
+            return False
+
+        summary = analysis.get("summary", [])
+        actions = analysis.get("next_actions", [])
+        ai_summary = analysis.get("ai_summary", "")
+        msg = [
+            f"🎮 {title}",
+            f"局标识: {match_key}" if match_key else "",
+            *summary[:2],
+            "",
+            "📌 即时动作:",
+            *[f"- {x}" for x in actions[:3]],
+            "",
+            f"🧠 AI: {ai_summary}" if ai_summary else "",
+            f"🛠 出装提示: {analysis.get('build_hint','')}"
+        ]
+        text = "\n".join([x for x in msg if x])
+
+        try:
+            r = requests.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                data={"chat_id": str(chat_id), "text": text},
+                timeout=6,
+            )
+            return r.status_code == 200
+        except Exception:
+            return False
 
 
 analyzer = AIDraftAnalyzer()

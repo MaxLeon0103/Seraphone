@@ -100,6 +100,7 @@ class MainWindow(FluentWindow):
         self.isTrayExit = False
         self.tasklistEnabled = True
         self.championSelection = ChampionSelection()
+        self._lastAiPushKey = ""
 
         self.lastTipsTime = time.time()
         self.lastTipsType = None
@@ -898,17 +899,18 @@ class MainWindow(FluentWindow):
 
         # AI draft analysis (non-blocking)
         try:
-            analysis = ai_draft_analyzer.analyze(info.get('summoners', []), cSession, queueId)
-            signalBus.aiDraftAnalysisUpdated.emit(analysis)
-            if analysis.get('summary'):
-                InfoBar.info(
-                    self.tr("AI Draft Analysis"),
-                    " | ".join(analysis.get('summary', [])[:2]),
-                    duration=3500,
-                    orient=Qt.Vertical,
-                    parent=self,
-                    position=InfoBarPosition.BOTTOM_RIGHT,
-                )
+            if cfg.get(cfg.enableAiAnalysis):
+                analysis = ai_draft_analyzer.analyze(info.get('summoners', []), cSession, queueId)
+                signalBus.aiDraftAnalysisUpdated.emit(analysis)
+                if analysis.get('summary'):
+                    InfoBar.info(
+                        self.tr("AI Draft Analysis"),
+                        " | ".join(analysis.get('summary', [])[:2]),
+                        duration=3500,
+                        orient=Qt.Vertical,
+                        parent=self,
+                        position=InfoBarPosition.BOTTOM_RIGHT,
+                    )
         except Exception as e:
             logger.exception("ai draft analyze failed", e, TAG)
 
@@ -991,6 +993,21 @@ class MainWindow(FluentWindow):
         await asyncio.gather(paintEnemySummonersInfo(),
                              sortAllySummonersByGameRole())
         await paintTeamColor()
+
+        # Push in-game AI analysis to Telegram once per match
+        try:
+            if cfg.get(cfg.enableAiAnalysis):
+                ally_info = self.gameInfoInterface.allySummonersInfo or {}
+                summoners = ally_info.get('summoners', [])
+                c_session = await connector.getChampSelectSession()
+                analysis = ai_draft_analyzer.analyze(summoners, c_session, queueId)
+                match_key = str(session.get('gameData', {}).get('gameId') or session.get('id') or queueId)
+                if self._lastAiPushKey != match_key:
+                    pushed = ai_draft_analyzer.push_to_telegram("对局AI分析", analysis, match_key)
+                    if pushed:
+                        self._lastAiPushKey = match_key
+        except Exception as e:
+            logger.exception("ai telegram push failed", e, TAG)
 
         self.checkAndSwitchTo(self.gameInfoInterface)
 

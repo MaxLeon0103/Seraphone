@@ -43,6 +43,7 @@ class GameInfoInterface(SeraphineInterface):
         # 保存召唤师的英雄信息
         # {summonerId: championId}
         self.allyChampions = {}
+        self.allySummonersInfo = {}
 
         # 保存召唤师楼层的顺序，列表中为 summonerId
         self.allyOrder = []
@@ -92,6 +93,7 @@ class GameInfoInterface(SeraphineInterface):
 
         self.allyChampions = info['champions']
         self.allyOrder = info['order']
+        self.allySummonersInfo = info
 
         # 概览栏 (左侧)
         self.summonersView.ally.updateSummoners(info['summoners'], self.isAram)
@@ -138,6 +140,7 @@ class GameInfoInterface(SeraphineInterface):
     def clear(self):
         self.allyChampions = {}
         self.allyOrder = []
+        self.allySummonersInfo = {}
 
         self.isAram = False
 

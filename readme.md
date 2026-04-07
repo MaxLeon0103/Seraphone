@@ -127,3 +127,15 @@ This fork adds a lightweight AI draft analyzer for champion select.
 - `SERAPHINE_AI_TIMEOUT` (default: `2.2` seconds)
 
 If `SERAPHINE_AI_API_KEY` is not provided, rule-based analysis still works.
+
+### Telegram push (in-game analysis)
+You can optionally push in-game analysis to Telegram after enemy data is available.
+
+Config keys:
+- `EnableAiTelegramPush` (bool)
+- `AiTelegramBotToken`
+- `AiTelegramChatId`
+
+Behavior:
+- Push once per match (deduplicated by match key)
+- If AI request fails/timeouts, rule-based analysis still runs
