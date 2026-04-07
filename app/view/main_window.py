@@ -944,6 +944,9 @@ class MainWindow(FluentWindow):
         if queueId in (1700, 1090, 1100, 1110, 1130, 1160):  # 斗魂 云顶匹配 (排位)
             return
 
+        ally_live_info = {}
+        enemy_live_info = {}
+
         # 如果是进游戏后开的软件，需要先把友方信息更新上去
         async def paintAllySummonersInfo():
             # TODO 自定义时, 若队伍成员<5, 会触发重新加载导致性能浪费
@@ -952,6 +955,8 @@ class MainWindow(FluentWindow):
 
             info = await parseGameInfoByGameflowSession(
                 session, currentSummonerId, "ally", useSGP=True)
+            nonlocal ally_live_info
+            ally_live_info = info
 
             self.gameInfoInterface.allyChampions = {}
             self.gameInfoInterface.allyOrder = []
@@ -965,6 +970,8 @@ class MainWindow(FluentWindow):
         async def paintEnemySummonersInfo():
             info = await parseGameInfoByGameflowSession(
                 session, currentSummonerId, 'enemy', useSGP=True)
+            nonlocal enemy_live_info
+            enemy_live_info = info
 
             # 这个 info 是已经按照游戏位置排序过的了（若排位）
             self.gameInfoInterface.updateEnemySummoners(info)
@@ -997,10 +1004,17 @@ class MainWindow(FluentWindow):
         # Push in-game AI analysis to Telegram once per match
         try:
             if cfg.get(cfg.enableAiAnalysis):
-                ally_info = self.gameInfoInterface.allySummonersInfo or {}
+                ally_info = ally_live_info or self.gameInfoInterface.allySummonersInfo or {}
                 summoners = ally_info.get('summoners', [])
-                c_session = await connector.getChampSelectSession()
-                analysis = ai_draft_analyzer.analyze(summoners, c_session, queueId)
+                enemy_summoners = (enemy_live_info or {}).get('summoners', [])
+
+                my_team = [{"summonerId": sid, "championId": cid}
+                           for sid, cid in (ally_info.get('champions', {}) or {}).items()]
+                their_team = [{"summonerId": sid, "championId": cid}
+                              for sid, cid in ((enemy_live_info or {}).get('champions', {}) or {}).items()]
+                live_session = {"myTeam": my_team, "theirTeam": their_team}
+
+                analysis = ai_draft_analyzer.analyze(summoners, live_session, queueId, enemy_summoners=enemy_summoners)
                 match_key = str(session.get('gameData', {}).get('gameId') or session.get('id') or queueId)
                 if self._lastAiPushKey != match_key:
                     pushed = ai_draft_analyzer.push_to_telegram("对局AI分析", analysis, match_key)

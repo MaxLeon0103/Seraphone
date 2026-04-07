@@ -37,7 +37,7 @@ class AIDraftAnalyzer:
         assists = sum(float(g.get("assists", 0)) for g in valid)
         return (kills + assists) / max(1.0, deaths)
 
-    def analyze(self, ally_summoners: List[Dict[str, Any]], champ_select_data: Dict[str, Any], queue_id: int = None) -> Dict[str, Any]:
+    def analyze(self, ally_summoners: List[Dict[str, Any]], champ_select_data: Dict[str, Any], queue_id: int = None, enemy_summoners: List[Dict[str, Any]] = None) -> Dict[str, Any]:
         ally_wr = []
         ally_kda = []
 
@@ -49,6 +49,16 @@ class AIDraftAnalyzer:
         avg_wr = sum(ally_wr) / len(ally_wr) if ally_wr else 0.5
         avg_kda = sum(ally_kda) / len(ally_kda) if ally_kda else 2.0
 
+        enemy_wr = 0.5
+        enemy_kda = 2.0
+        if enemy_summoners:
+            ewr = [self._safe_winrate((s or {}).get("gamesInfo", [])) for s in enemy_summoners]
+            ekda = [self._safe_kda((s or {}).get("gamesInfo", [])) for s in enemy_summoners]
+            if ewr:
+                enemy_wr = sum(ewr) / len(ewr)
+            if ekda:
+                enemy_kda = sum(ekda) / len(ekda)
+
         my_team = champ_select_data.get("myTeam", [])
         their_team = champ_select_data.get("theirTeam", [])
 
@@ -56,6 +66,8 @@ class AIDraftAnalyzer:
         enemy_locked = sum(1 for x in their_team if int(x.get("championId", 0) or 0) > 0)
 
         balance_score = int(max(20, min(95, avg_wr * 70 + avg_kda * 10 + 20)))
+        # enemy adjustment: enemy stronger -> reduce score
+        balance_score = int(max(10, min(95, balance_score - (enemy_wr - avg_wr) * 35 - (enemy_kda - avg_kda) * 3)))
 
         risk = "low"
         if avg_wr < 0.48 or avg_kda < 2.0:
@@ -65,6 +77,7 @@ class AIDraftAnalyzer:
 
         line1 = f"阵容/状态评分：{balance_score}/100（风险：{risk}）"
         line2 = f"锁定进度：我方 {ally_locked}/5，敌方 {enemy_locked}/5"
+        line3 = f"对比：我方WR {avg_wr:.0%} / 敌方WR {enemy_wr:.0%}"
 
         actions = []
         if risk == "high":
@@ -83,7 +96,7 @@ class AIDraftAnalyzer:
         result = {
             "team_balance_score": balance_score,
             "lane_risk": risk,
-            "summary": [line1, line2],
+            "summary": [line1, line2, line3],
             "next_actions": actions,
             "build_hint": "敌方控制多则优先韧性；爆发高则优先保命；均势按核心三件套推进。",
         }
