@@ -1,0 +1,58 @@
+name: Build Windows EXE Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v0.1.1-ai-exe)"
+        required: true
+        default: "v0.1.1-ai-exe"
+      prerelease:
+        description: "Mark as prerelease"
+        required: true
+        default: "true"
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        shell: pwsh
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller==5.13.2 py7zr
+
+      - name: Build package
+        shell: pwsh
+        run: |
+          .\make.ps1
+          if (!(Test-Path .\Seraphine.7z)) {
+            throw "Seraphine.7z not found after build"
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Seraphine-Windows
+          path: .\Seraphine.7z
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          name: ${{ inputs.tag }}
+          files: .\Seraphine.7z
+          prerelease: ${{ inputs.prerelease == 'true' }}
+          generate_release_notes: true
