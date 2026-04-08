@@ -218,6 +218,8 @@ class OpggWindow(OpggWindowBase):
             self.tr("Support"), "app/resource/images/icon-position-sup.svg", "SUPPORT")
 
         self.__setComboBoxCurrentData(
+            self.modeComboBox, cfg.get(cfg.opggMode))
+        self.__setComboBoxCurrentData(
             self.tierComboBox, cfg.get(cfg.opggTier))
         self.__setComboBoxCurrentData(
             self.regionComboBox, cfg.get(cfg.opggRegion))
@@ -417,6 +419,7 @@ class OpggWindow(OpggWindowBase):
         tier = self.tierComboBox.currentData()
         position = self.positionComboBox.currentData()
 
+        cfg.set(cfg.opggMode, mode)
         cfg.set(cfg.opggRegion, region)
         cfg.set(cfg.opggTier, tier)
         cfg.set(cfg.opggPosition, position)
@@ -470,6 +473,11 @@ class OpggWindow(OpggWindowBase):
         tier = self.tierComboBox.currentData()
         position = self.positionComboBox.currentData()
         championId = self.buildInterface.getCurrentChampionId()
+
+        cfg.set(cfg.opggMode, mode)
+        cfg.set(cfg.opggRegion, region)
+        cfg.set(cfg.opggTier, tier)
+        cfg.set(cfg.opggPosition, position)
 
         # 只有在排位模式下，可以选择对应的分路
         if mode != 'ranked':

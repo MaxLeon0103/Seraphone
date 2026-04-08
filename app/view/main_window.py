@@ -900,13 +900,20 @@ class MainWindow(FluentWindow):
         # AI draft analysis (non-blocking)
         try:
             if cfg.get(cfg.enableAiAnalysis):
-                analysis = ai_draft_analyzer.analyze(info.get('summoners', []), cSession, queueId)
+                analysis = await ai_draft_analyzer.analyze(info.get('summoners', []), cSession, queueId)
                 signalBus.aiDraftAnalysisUpdated.emit(analysis)
                 if analysis.get('summary'):
+                    brief = " | ".join(analysis.get('summary', [])[:2])
+                    streaks = analysis.get('streak_alerts', [])
+                    if streaks:
+                        brief += f"\n预警: {streaks[0]}"
+                    elif analysis.get('build_hint', ''):
+                        brief += f"\n出装: {analysis.get('build_hint', '')}"
+
                     InfoBar.info(
                         self.tr("AI Draft Analysis"),
-                        " | ".join(analysis.get('summary', [])[:2]),
-                        duration=3500,
+                        brief,
+                        duration=5200,
                         orient=Qt.Vertical,
                         parent=self,
                         position=InfoBarPosition.BOTTOM_RIGHT,
@@ -1014,7 +1021,7 @@ class MainWindow(FluentWindow):
                               for sid, cid in ((enemy_live_info or {}).get('champions', {}) or {}).items()]
                 live_session = {"myTeam": my_team, "theirTeam": their_team}
 
-                analysis = ai_draft_analyzer.analyze(summoners, live_session, queueId, enemy_summoners=enemy_summoners)
+                analysis = await ai_draft_analyzer.analyze(summoners, live_session, queueId, enemy_summoners=enemy_summoners)
                 match_key = str(session.get('gameData', {}).get('gameId') or session.get('id') or queueId)
                 if self._lastAiPushKey != match_key:
                     pushed = ai_draft_analyzer.push_to_telegram("对局AI分析", analysis, match_key)

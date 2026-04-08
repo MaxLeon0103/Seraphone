@@ -1255,6 +1255,7 @@ class LolClientConnector(QObject):
 class JsonManager:
     def __init__(self, itemData, spellData, runeData, queueData, champions, skins, perks, augments):
         self.items = {item["id"]: item["iconPath"] for item in itemData}
+        self.itemNames = {item["id"]: item.get("name", str(item["id"])) for item in itemData}
         self.spells = {item["id"]: item["iconPath"] for item in spellData[:-3]}
         self.runes = {item["id"]: {"icon": item["iconPath"],
                                    'name': item['name'],
@@ -1327,6 +1328,23 @@ class JsonManager:
                 logger.error(f"getItemIconPath, iconId: {iconId}", tag=TAG)
 
         return "/lol-game-data/assets/ASSETS/Items/Icons2D/gp_ui_placeholder.png"
+
+    def getItemNameById(self, itemId):
+        try:
+            if itemId in self.itemNames:
+                return self.itemNames[itemId]
+
+            path = self.items.get(itemId, "")
+            if not path:
+                return str(itemId)
+
+            # 回退：从 icon 文件名推断
+            name = str(path).replace("\\", "/").split("/")[-1]
+            if "." in name:
+                name = name.rsplit(".", 1)[0]
+            return name
+        except Exception:
+            return str(itemId)
 
     def getSummonerSpellIconPath(self, spellId):
         if spellId != 0:
